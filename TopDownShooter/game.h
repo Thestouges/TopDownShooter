@@ -42,4 +42,6 @@ private:
 	sf::Font font;
 	sf::Text text;
 	int enemysidespawn;
+	float enemyspawnrate;
+	float enemybulletrate;
 };

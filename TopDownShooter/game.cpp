@@ -8,11 +8,13 @@ game::game(){
 void game::init(){
 	windowSize = sf::Vector2f(800,600);
 	speed = .1;
-	enemyamount = 10;
+	enemyamount = 1;
 	playerbulletspeed = .1;
-	enemybulletspeed = .1;
+	enemybulletspeed = .01;
 	enemy = new ship[enemyamount];
 	enemyspeed = .1;
+	enemyspawnrate = .5;
+	enemybulletrate = .05;
 
 	midseperator.setSize(sf::Vector2f(2*windowSize.x/3,1));
 	midseperator.setFillColor(sf::Color::Black);
@@ -166,22 +168,36 @@ void game::spawnEnemy(){
 }
 
 void game::updateEnemy(){
-	for(int i = 0; i < enemyamount; i++)
+	for(int i = 0; i < enemyamount; i++){
 		if(enemy[i].getactiveship()){
+			enemy[i].setactiveship(true);
 			enemySprite.setPosition(enemy[i].getPosition());
 			window.draw(enemySprite);
 			enemy[i].updateEnemy();
 			if((enemy[i].getPosition().x < 0-enemySprite.getGlobalBounds().width || enemy[i].getPosition().x > 2*windowSize.x/3 + enemySprite.getGlobalBounds().width)){
 				enemy[i].setactiveship(false);
 			}
-			shootenemybullet(i);
 		}
+		shootenemybullet(i);
+		for(int j = 0; j < enemy[i].maxBullet(); j++){
+			if(enemy[i].isactiveBullet(i)){
+				enemyBulletSprite.setPosition(enemy[i].getBulletPosition(j));
+				window.draw(enemyBulletSprite);
+				enemy[i].updateBullets();
+				if(enemyBulletSprite.getPosition().y + enemyBulletSprite.getGlobalBounds().height >= windowSize.y){
+					enemy[i].setactiveBullet(j, false);
+				}
+			}
+		}
+	}
 }
 
 void game::shootenemybullet(int value){
-	for(int i = 0; i < enemy[value].maxBullet(); i++)
-		if(!enemy[value].isactiveBullet(i)){
+	for(int i = 0; i < enemy[value].maxBullet(); i++){
+		if(!enemy[value].isactiveBullet(i) && enemy[value].getClock().getElapsedTime() >= sf::seconds(enemybulletrate) && enemy[value].getactiveship()){
 			enemy[value].setactiveBullet(i, true);
 			enemy[value].shootbullet(i,enemy[i].getPosition()+sf::Vector2f(enemySprite.getGlobalBounds().width/2 - enemyBulletSprite.getGlobalBounds().width/2,0),sf::Vector2f(0,enemybulletspeed));
+			break;
 		}
+	}
 }
