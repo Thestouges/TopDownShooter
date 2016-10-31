@@ -10,15 +10,17 @@ void game::init(){
 	speed = .1;
 	enemyamount = 10;
 	playerbulletspeed = .1;
+	enemybulletspeed = .1;
 	enemy = new ship[enemyamount];
+	enemyspeed = .1;
 
 	midseperator.setSize(sf::Vector2f(2*windowSize.x/3,1));
 	midseperator.setFillColor(sf::Color::Black);
 	midseperator.setPosition(0,windowSize.y/2);
 
-	playArea.setSize(sf::Vector2f(2*windowSize.x/3,windowSize.y));
-	playArea.setFillColor(sf::Color::White);
-	playArea.setPosition(0,0);
+	sideBar.setSize(sf::Vector2f(windowSize.x/3,windowSize.y));
+	sideBar.setFillColor(sf::Color::Black);
+	sideBar.setPosition(2*windowSize.x/3,0);
 
 	if(!playerTexture.loadFromFile("playerSprite.png")){
 	}
@@ -36,9 +38,14 @@ void game::init(){
 	text.setFont(font);
 	text.setFillColor(sf::Color::Red);
 	text.setCharacterSize(12);
+	text.setPosition(0,0);
 
 	playerBulletSprite.setTexture(playerBulletTexture);
 	playerBulletSprite.setScale(.1,.1);
+
+	enemyBulletSprite.setTexture(playerBulletTexture);
+	enemyBulletSprite.setScale(.1,.1);
+	enemyBulletSprite.setColor(sf::Color::Green);
 
 	playerSprite.setTexture(playerTexture);
 	playerSprite.setScale(0.05,0.05);
@@ -55,17 +62,18 @@ void game::run(){
 			if (Event.type == sf::Event::Closed)
 				window.close();
 		}
-		window.clear();
+		window.clear(sf::Color::White);
 		drawObjects();
 		window.display();
 	}
 }
 
 void game::drawObjects(){
-	window.draw(playArea);
 	window.draw(midseperator);
 	drawPlayer();
 	spawnEnemy();
+	updateEnemy();
+	window.draw(sideBar);
 }
 
 void game::drawPlayer(){
@@ -139,18 +147,41 @@ void game::drawplayerBullet(){
 void game::spawnEnemy(){
 	if(enemyclock.getElapsedTime() >= sf::seconds(.5)){
 		for(int i = 0; i < enemyamount; i++)
-			if(enemy[i].getactiveship()){
+			if(!enemy[i].getactiveship()){
 				enemyclock.restart();
+				enemy[i].resetClock();
 				enemy[i].setactiveship(true);
 				enemysidespawn = std::rand()%2;
-					if(enemysidespawn){
-						enemy[i].setposition(sf::Vector2f(0,std::rand() % int(windowSize.y) / 2));
-					}
-					else{
-						enemy[i].setposition(sf::Vector2f(0,0));
-					}
+				if(enemysidespawn){
+					enemy[i].setposition(sf::Vector2f(0-enemySprite.getGlobalBounds().width,std::rand() % int(int(windowSize.y) / 2 - enemySprite.getGlobalBounds().height)));
+					enemy[i].setenemyDir(sf::Vector2f(enemyspeed, 0));
+				}
+				else{
+					enemy[i].setposition(sf::Vector2f(2*windowSize.x/3,std::rand() % int(int(windowSize.y) / 2 - enemySprite.getGlobalBounds().height)));
+					enemy[i].setenemyDir(sf::Vector2f(-enemyspeed, 0));
+				}
+				break;
 			}
-		
 	}
-	window.draw(enemySprite);
+}
+
+void game::updateEnemy(){
+	for(int i = 0; i < enemyamount; i++)
+		if(enemy[i].getactiveship()){
+			enemySprite.setPosition(enemy[i].getPosition());
+			window.draw(enemySprite);
+			enemy[i].updateEnemy();
+			if((enemy[i].getPosition().x < 0-enemySprite.getGlobalBounds().width || enemy[i].getPosition().x > 2*windowSize.x/3 + enemySprite.getGlobalBounds().width)){
+				enemy[i].setactiveship(false);
+			}
+			shootenemybullet(i);
+		}
+}
+
+void game::shootenemybullet(int value){
+	for(int i = 0; i < enemy[value].maxBullet(); i++)
+		if(!enemy[value].isactiveBullet(i)){
+			enemy[value].setactiveBullet(i, true);
+			enemy[value].shootbullet(i,enemy[i].getPosition()+sf::Vector2f(enemySprite.getGlobalBounds().width/2 - enemyBulletSprite.getGlobalBounds().width/2,0),sf::Vector2f(0,enemybulletspeed));
+		}
 }

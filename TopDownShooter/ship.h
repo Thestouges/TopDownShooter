@@ -19,10 +19,14 @@ public:
 	void setactiveship(bool);
 	void setenemyDir(sf::Vector2f);
 	sf::Vector2f getenemyDir();
+	void updateEnemy();
+	void resetClock();
+	sf::Clock getClock();
 private:
 	sf::Vector2f position;
 	bullet *bullets;
 	int bulletamount;
 	bool activeship;
 	sf::Vector2f dir;
+	sf::Clock clock;
 };

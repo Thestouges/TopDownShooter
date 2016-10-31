@@ -13,6 +13,8 @@ public:
 	void playerInput();
 	void drawplayerBullet();
 	void spawnEnemy();
+	void updateEnemy();
+	void shootenemybullet(int);
 private:
 	sf::RenderWindow window;
 	sf::Event Event;
@@ -23,16 +25,20 @@ private:
 	ship player;
 	int enemyamount;
 	ship *enemy;
+	float enemyspeed;
 	sf::Vector2f windowSize;
 	sf::Keyboard keyboard;
 	float speed;
 	sf::RectangleShape midseperator;
-	sf::RectangleShape playArea;
+	sf::RectangleShape sideBar;
 	sf::Sprite playerBulletSprite;
 	sf::Texture playerBulletTexture;
+	sf::Sprite enemyBulletSprite;
+	sf::Texture enemyBulletTexture;
 	sf::Clock playerclock;
 	sf::Clock enemyclock;
 	float playerbulletspeed;
+	float enemybulletspeed;
 	sf::Font font;
 	sf::Text text;
 	int enemysidespawn;

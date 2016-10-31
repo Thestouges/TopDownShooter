@@ -64,3 +64,15 @@ void ship::setenemyDir(sf::Vector2f value){
 sf::Vector2f ship::getenemyDir(){
 	return dir;
 }
+
+void ship::updateEnemy(){
+	position += dir;
+}
+
+void ship::resetClock(){
+	clock.restart();
+}
+
+sf::Clock ship::getClock(){
+	return clock;
+}
