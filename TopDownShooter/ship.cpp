@@ -1,7 +1,7 @@
 #include "ship.h"
 
 ship::ship(){
-	bulletamount = 10;
+	bulletamount = 5;
 	bullets = new bullet[bulletamount];
 	for(int i = 0; i < bulletamount; i++)
 		bullets[i].active = false;

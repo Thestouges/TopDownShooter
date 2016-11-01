@@ -8,13 +8,14 @@ game::game(){
 void game::init(){
 	windowSize = sf::Vector2f(800,600);
 	speed = .1;
-	enemyamount = 1;
+	enemyamount = 3;
 	playerbulletspeed = .1;
-	enemybulletspeed = .01;
+	enemybulletspeed = .1;
 	enemy = new ship[enemyamount];
 	enemyspeed = .1;
 	enemyspawnrate = .5;
-	enemybulletrate = .05;
+	enemybulletrate = .2;
+	gameOver = false;
 
 	midseperator.setSize(sf::Vector2f(2*windowSize.x/3,1));
 	midseperator.setFillColor(sf::Color::Black);
@@ -64,10 +65,18 @@ void game::run(){
 			if (Event.type == sf::Event::Closed)
 				window.close();
 		}
-		window.clear(sf::Color::White);
-		drawObjects();
-		window.display();
+		while(!gameOver){
+			window.clear(sf::Color::White);
+			drawObjects();
+			window.display();
+		}
+		text.setString("Game Over");
+		text.setPosition(2*windowSize.x/6,windowSize.y/2);
+		text.setCharacterSize(24);
+		window.draw(text);
 	}
+
+
 }
 
 void game::drawObjects(){
@@ -142,6 +151,14 @@ void game::drawplayerBullet(){
 			if(playerBulletSprite.getPosition().y + playerBulletSprite.getGlobalBounds().height <= 0){
 				player.setactiveBullet(i, false);
 			}
+			for(int j = 0; j < enemyamount; j++){
+				if(enemy[j].getactiveship()){
+					enemySprite.setPosition(enemy[j].getPosition());
+					if(playerBulletSprite.getGlobalBounds().intersects(enemySprite.getGlobalBounds())){
+						enemy[j].setactiveship(false);
+					}
+				}
+			}
 		}
 	}
 }
@@ -180,24 +197,38 @@ void game::updateEnemy(){
 		}
 		shootenemybullet(i);
 		for(int j = 0; j < enemy[i].maxBullet(); j++){
-			if(enemy[i].isactiveBullet(i)){
+			if(enemy[i].isactiveBullet(j)){
 				enemyBulletSprite.setPosition(enemy[i].getBulletPosition(j));
 				window.draw(enemyBulletSprite);
-				enemy[i].updateBullets();
 				if(enemyBulletSprite.getPosition().y + enemyBulletSprite.getGlobalBounds().height >= windowSize.y){
 					enemy[i].setactiveBullet(j, false);
 				}
+				collisionCheck();
 			}
 		}
+		enemy[i].updateBullets();
 	}
 }
 
 void game::shootenemybullet(int value){
 	for(int i = 0; i < enemy[value].maxBullet(); i++){
-		if(!enemy[value].isactiveBullet(i) && enemy[value].getClock().getElapsedTime() >= sf::seconds(enemybulletrate) && enemy[value].getactiveship()){
+		if(!enemy[value].isactiveBullet(i) && enemy[value].getClock().getElapsedTime() >= sf::seconds(enemybulletrate)){
 			enemy[value].setactiveBullet(i, true);
-			enemy[value].shootbullet(i,enemy[i].getPosition()+sf::Vector2f(enemySprite.getGlobalBounds().width/2 - enemyBulletSprite.getGlobalBounds().width/2,0),sf::Vector2f(0,enemybulletspeed));
+			enemy[value].shootbullet(i,enemy[value].getPosition()+sf::Vector2f(enemySprite.getGlobalBounds().width/2 - enemyBulletSprite.getGlobalBounds().width/2,0),sf::Vector2f(0,enemybulletspeed));
+			enemy[value].resetClock();
 			break;
+		}
+	}
+}
+
+void game::collisionCheck(){
+	for(int i = 0; i < enemyamount; i++){
+		for(int j = 0; j < enemy[i].maxBullet(); j++){
+			if(enemy[i].isactiveBullet(j)){
+				if(playerSprite.getGlobalBounds().intersects(enemyBulletSprite.getGlobalBounds())){
+					gameOver = true;
+				}
+			}
 		}
 	}
 }

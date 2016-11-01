@@ -15,6 +15,7 @@ public:
 	void spawnEnemy();
 	void updateEnemy();
 	void shootenemybullet(int);
+	void collisionCheck();
 private:
 	sf::RenderWindow window;
 	sf::Event Event;
@@ -44,4 +45,5 @@ private:
 	int enemysidespawn;
 	float enemyspawnrate;
 	float enemybulletrate;
+	bool gameOver;
 };
